@@ -14,10 +14,12 @@
             background-color: #f0f0f0;
         }
         .tracker-container {
-            background-color: white;
+            background-color: #e0f7ff; /* 연한 파란색 */
+            border: 2px solid #004080; /* 진한 파란색 테두리 */
             padding: 20px;
             border-radius: 10px;
             box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
+            width: 300px;
         }
         .habit {
             display: flex;
@@ -30,6 +32,18 @@
         .habit label {
             margin: 0;
         }
+        .add-habit-btn {
+            margin-top: 10px;
+            background-color: #004080; /* 진한 파란색 */
+            color: white;
+            border: none;
+            padding: 5px 10px;
+            border-radius: 5px;
+            cursor: pointer;
+        }
+        .add-habit-btn:hover {
+            background-color: #003366; /* 호버 효과를 위한 더 진한 파란색 */
+        }
     </style>
 </head>
 <body>
@@ -39,27 +53,65 @@
             <input type="checkbox" id="habit1">
             <label for="habit1">Drink Water</label>
         </div>
-        <div class="habit">
-            <input type="checkbox" id="habit2">
-            <label for="habit2">Exercise</label>
-        </div>
-        <div class="habit">
-            <input type="checkbox" id="habit3">
-            <label for="habit3">Read a Book</label>
-        </div>
+        <button class="add-habit-btn" onclick="addHabit()">+</button>
     </div>
 
     <script>
-        // 사용자가 체크 상태를 유지할 수 있도록 로컬 스토리지를 사용할 수 있습니다.
-        document.addEventListener('DOMContentLoaded', function() {
-            const habits = document.querySelectorAll('.habit input');
-            habits.forEach(habit => {
-                const habitId = habit.id;
-                habit.checked = localStorage.getItem(habitId) === 'true';
+        // 로컬 스토리지에서 습관 목록을 불러오는 함수
+        function loadHabits() {
+            const habits = JSON.parse(localStorage.getItem('habits')) || ['Drink Water'];
+            const container = document.querySelector('.tracker-container');
 
-                habit.addEventListener('change', function() {
-                    localStorage.setItem(habitId, habit.checked);
-                });
+            habits.forEach(habitText => {
+                if (habitText !== 'Drink Water') { // 기본 습관은 이미 존재하므로 제외
+                    createHabitElement(habitText);
+                }
+            });
+        }
+
+        // 습관을 추가하는 함수
+        function addHabit() {
+            const habitText = prompt('Enter your new habit:');
+            if (habitText) {
+                createHabitElement(habitText);
+
+                // 기존 로컬 스토리지에서 습관 목록을 가져와 업데이트
+                let habits = JSON.parse(localStorage.getItem('habits')) || [];
+                habits.push(habitText);
+                localStorage.setItem('habits', JSON.stringify(habits));
+            }
+        }
+
+        // 새로운 습관 엘리먼트를 생성하는 함수
+        function createHabitElement(habitText) {
+            const container = document.querySelector('.tracker-container');
+            const newHabit = document.createElement('div');
+            newHabit.classList.add('habit');
+
+            const checkbox = document.createElement('input');
+            checkbox.type = 'checkbox';
+            checkbox.id = habitText;
+            checkbox.addEventListener('change', () => {
+                localStorage.setItem(checkbox.id, checkbox.checked);
+            });
+
+            const label = document.createElement('label');
+            label.htmlFor = habitText;
+            label.textContent = habitText;
+
+            newHabit.appendChild(checkbox);
+            newHabit.appendChild(label);
+            container.insertBefore(newHabit, container.querySelector('.add-habit-btn'));
+        }
+
+        // 페이지가 로드될 때 기존 습관 목록을 불러오기
+        document.addEventListener('DOMContentLoaded', function() {
+            loadHabits();
+
+            // 기존 체크 상태를 로드
+            const checkboxes = document.querySelectorAll('.habit input');
+            checkboxes.forEach(checkbox => {
+                checkbox.checked = localStorage.getItem(checkbox.id) === 'true';
             });
         });
     </script>
