@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Habit/Goal Tracker</title>
+    <title>Drink Water Tracker</title>
     <style>
         body {
             font-family: Arial, sans-serif;
@@ -14,12 +14,14 @@
             background-color: #f0f0f0;
         }
         .tracker-container {
+            position: relative;
             background-color: #e0f7ff; /* 연한 파란색 */
             border: 2px solid #004080; /* 진한 파란색 테두리 */
             padding: 20px;
             border-radius: 10px;
             box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
             width: 300px;
+            overflow: hidden;
         }
         .habit {
             display: flex;
@@ -47,42 +49,68 @@
         .control-buttons button:hover {
             background-color: #003366; /* 호버 효과를 위한 더 진한 파란색 */
         }
+        .progress-overlay {
+            position: absolute;
+            bottom: 0;
+            left: 0;
+            width: 100%;
+            background-color: #004080; /* 오버레이 진한 파란색 */
+            transition: height 0.3s ease;
+            z-index: 0;
+        }
+        .content {
+            position: relative;
+            z-index: 1;
+        }
     </style>
 </head>
 <body>
     <div class="tracker-container">
-        <h2>Habit Tracker</h2>
-        <div class="habit">
-            <label for="habit1">Drink Water: <span id="habit1-value">0</span>/10</label>
-            <div class="control-buttons">
-                <button onclick="updateHabit('habit1', -1)">-</button>
-                <button onclick="updateHabit('habit1', 1)">+</button>
+        <div class="progress-overlay" id="progress-overlay" style="height: 0;"></div>
+        <div class="content">
+            <h2>Drink Water</h2>
+            <div class="habit">
+                <label for="habit1">Progress: <span id="habit1-value">0</span>/10</label>
+                <div class="control-buttons">
+                    <button onclick="updateHabit(-1)">-</button>
+                    <button onclick="updateHabit(1)">+</button>
+                </div>
             </div>
         </div>
     </div>
 
     <script>
         // 로컬 스토리지에서 값을 불러오는 함수
-        function loadHabitValue(habitId) {
-            const value = parseInt(localStorage.getItem(habitId)) || 0;
-            document.getElementById(`${habitId}-value`).textContent = value;
+        function loadHabitValue() {
+            const value = parseInt(localStorage.getItem('habit1')) || 0;
+            document.getElementById('habit1-value').textContent = value;
+            updateProgressOverlay(value);
         }
 
         // 습관 값을 업데이트하는 함수
-        function updateHabit(habitId, change) {
-            let currentValue = parseInt(localStorage.getItem(habitId)) || 0;
+        function updateHabit(change) {
+            let currentValue = parseInt(localStorage.getItem('habit1')) || 0;
             let newValue = currentValue + change;
 
             if (newValue < 0) newValue = 0; // 값이 0보다 작아지지 않도록
             if (newValue > 10) newValue = 10; // 값이 10을 초과하지 않도록
 
-            localStorage.setItem(habitId, newValue);
-            document.getElementById(`${habitId}-value`).textContent = newValue;
+            localStorage.setItem('habit1', newValue);
+            document.getElementById('habit1-value').textContent = newValue;
+
+            updateProgressOverlay(newValue);
+        }
+
+        // 오버레이 높이를 업데이트하는 함수
+        function updateProgressOverlay(value) {
+            const progressOverlay = document.getElementById('progress-overlay');
+            const percentage = (value / 10) * 100; // 목표값이 10일 때, 비율 계산
+            progressOverlay.style.height = `${percentage}%`;
         }
 
         // 페이지가 로드될 때 초기값을 불러오기
         document.addEventListener('DOMContentLoaded', function() {
-            loadHabitValue('habit1');
+            loadHabitValue();
         });
     </script>
 </body>
